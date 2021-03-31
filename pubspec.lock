@@ -72,16 +72,16 @@ packages:
   flutter_midi_command:
     dependency: "direct main"
     description:
-      name: flutter_midi_command
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../FlutterMidiCommand"
+      relative: true
+    source: path
     version: "0.3.0"
   flutter_midi_command_linux:
     dependency: transitive
     description:
-      name: flutter_midi_command_linux
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../../flutter_midi_command_linux"
+      relative: true
+    source: path
     version: "0.1.2"
   flutter_midi_command_platform_interface:
     dependency: transitive
