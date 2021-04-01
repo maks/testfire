@@ -1,10 +1,12 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
+import 'package:testfire/monomap.dart';
+
+import 'oled_painter.dart';
 
 void main() {
   runApp(MyApp());
@@ -38,6 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
   MidiCommand _midiCommand = MidiCommand();
 
   MidiDevice? connectedDevice;
+
+  final Monomap oledBitmap = Monomap(128, 64);
 
   @override
   void initState() {
@@ -106,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void sendTestBitmap() async {
-    sendSysexBitmap(_midiCommand, _aOLEDBitmap);
+    sendSysexBitmap(_midiCommand, oledBitmap.data);
   }
 
   void sendCheckersOLED() async {
@@ -135,14 +139,29 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    oledBitmap.drawLine(5, 5, 50, 50, true);
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title!),
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                width: 128,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                ),
+                child: CustomPaint(
+                  painter: OLEDPainter(oledBitmap.data),
+                ),
+              ),
+            ),
             TextButton(
               onPressed: sendAllOff,
               child: Text('ALL OFF'),
@@ -216,7 +235,8 @@ void _plotPixel(int X, int Y, int C) {
   }
 }
 
-void sendSysexBitmap(MidiCommand midiCmd, Uint8List bitmap) {
+void sendSysexBitmap(MidiCommand midiCmd, List<bool> boolMap) {
+  final bitmap = _aOLEDBitmap;
   // these need to go after the bitmap length high/low bytes
   // but need to be included in the payload length, hence we just
   // put them at the start of the sent "bitmap" payload
@@ -238,9 +258,11 @@ void sendSysexBitmap(MidiCommand midiCmd, Uint8List bitmap) {
   y = 0;
   for (x = 0; x < 128; ++x) {
     for (y = 0; y < 64; ++y) {
-      if (y < 13 || y > 28) {
-        _plotPixel(x, y, 1);
-      }
+      // if (y < 13 || y > 28) {
+      //   _plotPixel(x, y, 1);
+      // }
+      final pxl = boolMap[x + (y * 128)] ? 1 : 0;
+      _plotPixel(x, y, pxl);
     }
   }
 
