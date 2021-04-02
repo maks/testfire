@@ -4,8 +4,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
-import 'package:testfire/monomap.dart';
 
+import 'package:oled_font_57/oled_font_57.dart' as font57;
+
+import 'monomap.dart';
 import 'oled_painter.dart';
 
 void main() {
@@ -139,7 +141,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    oledBitmap.drawLine(5, 5, 50, 50, true);
+    // oledBitmap.drawLine(5, 5, 50, 50, true);
+    final font = Font(
+      monospace: font57.monospace,
+      width: font57.width,
+      height: font57.height,
+      fontData: font57.fontData,
+      lookup: font57.lookup,
+    );
+    oledBitmap.writeString(font, 1, 'hello fire', true, true, 1);
+    oledBitmap.setCursor(0, 10);
+    oledBitmap.writeString(font, 2, 'Large Font', true, true, 1);
+    oledBitmap.setCursor(0, 27);
+    oledBitmap.writeString(font, 3, 'ABCD', true, true, 1);
     
     return Scaffold(
       appBar: AppBar(
