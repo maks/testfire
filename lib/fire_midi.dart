@@ -108,6 +108,47 @@ class FireDevice implements ControllerDevice {
     _midiCommand.sendData(Uint8List.fromList(midiData));
   }
 
+  void colorPad(int padRow, int padColumn, int red, int green, int blue) {
+    final Uint8List sysexHeader = Uint8List.fromList([
+      0xF0, // System Exclusive
+      0x47, // Akai Manufacturer ID
+      0x7F, // The All-Call address
+      0x43, // “Fire” product
+      0x65, // Write LED cmd
+      0x00, // mesg length - high byte
+      0x04, // mesg length - low byte
+    ]);
+    final Uint8List sysexFooter = Uint8List.fromList([
+      0xF7, // End of Exclusive
+    ]);
+
+    final Uint8List ledData = Uint8List.fromList([
+      (padRow * 16 + padColumn),
+      red,
+      green,
+      blue,
+    ]);
+
+    final b = BytesBuilder();
+    b.add(sysexHeader);
+    b.add(ledData);
+    b.add(sysexFooter);
+
+    final midiData = b.toBytes();
+
+    _midiCommand.sendData(Uint8List.fromList(midiData));
+  }
+
+  void ledOn(int controllerId, int value) {
+    final Uint8List ccData = Uint8List.fromList([
+      0xB0, // midi control change code
+      controllerId,
+      value,
+    ]);
+    _midiCommand.sendData(Uint8List.fromList(ccData));
+  }
+
+
   void _disconnect() {
     final d = connectedDevice;
     if (d != null) {
