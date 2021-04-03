@@ -1,13 +1,8 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:monochrome_draw/monochrome_draw.dart';
 import 'package:oled_font_57/oled_font_57.dart' as font57;
+import 'package:testfire/fire_midi.dart';
 
-import 'fire_midi.dart';
 import 'oled_painter.dart';
 
 void main() {
@@ -37,110 +32,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  StreamSubscription<String>? _setupSubscription;
-  StreamSubscription<MidiPacket>? _dataSubscription;
-  MidiCommand _midiCommand = MidiCommand();
-
-  MidiDevice? connectedDevice;
-
   final MonoCanvas oledBitmap = MonoCanvas(128, 64);
+
+  final fire = FireDevice();
 
   @override
   void initState() {
     super.initState();
-
-    _listDevices();
-
-    _setupSubscription = _midiCommand.onMidiSetupChanged?.listen((data) {
-      print("setup changed $data");
-
-      switch (data) {
-        case "deviceFound":
-          print('found: $data');
-          setState(() {});
-          break;
-        // case "deviceOpened":
-        //   break;
-        default:
-          print("Unhandled setup change: $data");
-
-          break;
-      }
-    });
-
-    _dataSubscription = _midiCommand.onMidiDataReceived?.listen((packet) {
-      print("MIDI data: $packet");
-      for (var d in packet.data) {
-        print('midi data:$d');
-      }
-    });
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  void disconnectDevice() {
-    disconnect();
-    _dataSubscription?.cancel();
-    _setupSubscription?.cancel();
-  }
-
-  void _listDevices() async {
-    final devices = await _midiCommand.devices;
-
-    if (devices != null) {
-      for (var d in devices) {
-        print('MIDI DEVICE: [${d.id}] "${d.name}" ${d.inputPorts}');
-
-        if (d.name == 'FL STUDIO FIRE') {
-          print('connect to device: ${d.id} ${d.name}');
-          _midiCommand.connectToDevice(d);
-          connectedDevice = d;
-        }
-      }
-    } else {
-      print('NULL devices');
-    }
-  }
-
-  void sendAllOff() {
-    print('sending all OFF to:');
-    _midiCommand.sendData(Uint8List.fromList([0xB0, 0x7F, 0]));
-  }
-
-  void sendAllOn() {
-    print('sending all ON to:');
-    _midiCommand.sendData(Uint8List.fromList([0xB0, 0x7F, 1]));
-  }
-
-  void sendTestBitmap() async {
-    sendSysexBitmap(_midiCommand, oledBitmap.data);
-  }
-
-  void sendCheckersOLED() async {
-    final f = File('../sysex/MIDI_FIRE_Sysex_CheckerBitmap.syx');
-    print('ex: ${await f.exists()}');
-    final midiData = await f.readAsBytes();
-
-    _midiCommand.sendData(Uint8List.fromList(midiData));
-  }
-
-  void sendOffOLED() async {
-    final f = File('../sysex/MIDI_FIRE_Sysex_AllBlackBitmap.syx');
-    print('ex: ${await f.exists()}');
-    final midiData = await f.readAsBytes();
-
-    _midiCommand.sendData(Uint8List.fromList(midiData));
-  }
-
-  void disconnect() {
-    final d = connectedDevice;
-    if (d != null) {
-      _midiCommand.disconnectDevice(d);
-      print('DISCONNECTED ${d.id} ${d.name}');
-    }
+    fire.disconnectDevice();
   }
 
   @override
@@ -181,23 +85,23 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             TextButton(
-              onPressed: sendAllOff,
+              onPressed: fire.sendAllOff,
               child: Text('ALL OFF'),
             ),
             TextButton(
-              onPressed: sendAllOn,
+              onPressed: fire.sendAllOn,
               child: Text('ALL ON'),
             ),
             TextButton(
-              onPressed: sendTestBitmap,
+              onPressed: () => fire.sendBitmap(oledBitmap.data),
               child: Text('BITMAP'),
             ),
             TextButton(
-              onPressed: sendCheckersOLED,
+              onPressed: fire.sendCheckersOLED,
               child: Text('Checkers'),
             ),
             TextButton(
-              onPressed: sendOffOLED,
+              onPressed: fire.sendOffOLED,
               child: Text('OLED OFF'),
             ),
           ],
@@ -205,7 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          disconnect();
+          fire.disconnectDevice();
         },
         child: Icon(Icons.add),
       ),
