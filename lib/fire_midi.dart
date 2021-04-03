@@ -66,9 +66,6 @@ void sendSysexBitmap(MidiCommand midiCmd, List<bool> boolMap) {
   y = 0;
   for (x = 0; x < 128; ++x) {
     for (y = 0; y < 64; ++y) {
-      // if (y < 13 || y > 28) {
-      //   _plotPixel(x, y, 1);
-      // }
       final pxl = boolMap[x + (y * 128)] ? 1 : 0;
       _plotPixel(x, y, pxl);
     }
@@ -98,8 +95,11 @@ void sendSysexBitmap(MidiCommand midiCmd, List<bool> boolMap) {
 
   final midiData = b.toBytes();
 
+  midiCmd.sendData(Uint8List.fromList(midiData));
+}
+
+//debug: write out bytes sent in sysex cmd to a sysex file
+void _debugSysexToFile(Uint8List midiData) {
   File testout = File('testfire1.sysex');
   testout.writeAsBytes(midiData);
-
-  midiCmd.sendData(Uint8List.fromList(midiData));
 }
