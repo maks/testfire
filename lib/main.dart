@@ -35,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final MonoCanvas oledBitmap = MonoCanvas(128, 64);
 
-  final fire = FireDevice();
+  final fire = FireDevice((_) {});
   int ledCounter = 0;
   bool toggle = false;
 
@@ -125,6 +125,16 @@ class _MyHomePageState extends State<MyHomePage> {
             TextButton(
               onPressed: () => fire.sendMidi(ControlBankLED.on()),
               child: Text('Bank LED OFF'),
+            ),
+            TextButton(
+              onPressed: () =>
+                  fire.sendMidi(CCInputs.on(CCInputs.play, CCInputs.green3)),
+              child: Text('Play button On'),
+            ),
+            TextButton(
+              onPressed: () =>
+                  fire.sendMidi(CCInputs.on(CCInputs.play, CCInputs.off)),
+              child: Text('Play button Off'),
             ),
             TextButton(
               onPressed: () {

@@ -16,6 +16,8 @@ class FireDevice implements ControllerDevice {
   StreamSubscription<String>? _setupSubscription;
   StreamSubscription<MidiPacket>? _dataSubscription;
 
+  final Function(MidiPacket) onMidiData;
+
   static const _aBitMutate = [
     [13, 19, 25, 31, 37, 43, 49],
     [0, 20, 26, 32, 38, 44, 50],
@@ -29,7 +31,7 @@ class FireDevice implements ControllerDevice {
 
   Uint8List _aOLEDBitmap = Uint8List(1175);
 
-  FireDevice() {
+  FireDevice(this.onMidiData) {
     connectDevice();
   }
 
@@ -59,6 +61,7 @@ class FireDevice implements ControllerDevice {
       for (var d in packet.data) {
         print('midi data:$d');
       }
+      onMidiData(packet);
     });
 
     _listDevices();
@@ -346,9 +349,49 @@ class CCInputs {
   static const play = 51;
   static const stop = 52;
   static const record = 53;
+
+  // All
+  static const off = 0;
+
+  // Red Only
+  // pattern up/down, browser, grid left/right
+  static const paleRed = 1;
+  static const red = 2;
+
+  // Green only
+  // mute 1,2,3,4
+  static const paleGreen = 1;
+  static const green = 2;
+
+  // Yellow only
+  // alt, stop
+  static const paleYellow = 1;
+  static const yellow = 2;
+
+  // Yellow-Red
+  // step, note, drum, perform, shift, record
+  static const paleYellow2 = 1;
+  static const paleRed2 = 2;
+  static const yellow2 = 3;
+  static const red2 = 4;
+
+  // Yellow-Green
+  // pattern, play
+  static const paleGreen3 = 1;
+  static const paleYellow3 = 2;
+  static const green3 = 3;
+  static const yellow3 = 4;
+
+  static Uint8List on(int id, int value) {
+    return Uint8List.fromList([
+      0xB0, // midi control change code
+      id,
+      value,
+    ]);
+  }
 }
 
-class padInputs {
+class PadInputs {
   static const noteDown = 144;
   static const noteUp = 128;
 
