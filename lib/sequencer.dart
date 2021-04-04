@@ -58,7 +58,8 @@ class Sequencer {
   // Generates a new blank track data structure
   static Map<DRUM_SAMPLE, List<bool>> get _blanktape =>
       Map.fromIterable(DRUM_SAMPLE.values,
-          key: (k) => k, value: (v) => List.generate(8, (i) => false));
+          key: (k) => k,
+          value: (v) => List.generate(_stepsPerPattern, (i) => false));
 
   // Track note on/off data
   static Map<DRUM_SAMPLE, List<bool>> _trackdata = _blanktape;
@@ -133,7 +134,7 @@ class Sequencer {
   void processInput(PadEvent event) {
     int position = (_watch.elapsedMilliseconds < 900)
         ? step
-        : (step != 7)
+        : (step != (_stepsPerPattern - 1))
             ? step + 1
             : 0;
     edit(EditEvent(event.sample, position));
@@ -157,7 +158,7 @@ class Sequencer {
 
   // Process the next step
   void next() {
-    step = (step == 7) ? 0 : step + 1;
+    step = (step == (_stepsPerPattern - 1)) ? 0 : step + 1;
     _watch.reset();
 
     trackdata.forEach((DRUM_SAMPLE sample, List<bool> track) {

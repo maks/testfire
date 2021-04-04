@@ -35,3 +35,28 @@ class Transport {
     device.sendMidi(CCInputs.on(CCInputs.stop, CCInputs.off));
   }
 }
+
+class TrackController {
+  final List<_Track> tracks = List.generate(4, (index) => _Track(index));
+  // called each time step changes
+  void step(FireDevice device, int step) {
+    for (var t in tracks) {
+      t.step(device, step);
+    }
+  }
+
+  void reset() {}
+}
+
+class _Track {
+  final int row;
+
+  _Track(this.row);
+
+  void step(FireDevice device, int step) {
+    int prevStep = (step == 0) ? 15 : step - 1;
+
+    device.colorPad(row, prevStep, 0, 0, 0);
+    device.colorPad(row, step, 0, 0, 127);
+  }
+}
