@@ -37,17 +37,18 @@ class _MyHomePageState extends State<MyHomePage> {
   late final fire = FireDevice(_midiDataListener);
   final sequencer = Sequencer();
   late final transport = Transport(sequencer);
-  final tracks = TrackController();
+  late final tracks = TrackController(sequencer);
 
   void _midiDataListener(MidiPacket packet) {
     transport.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
+    tracks.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
   }
 
   @override
   void initState() {
     super.initState();
     sequencer.listen((signal) {
-      print('seq: $signal [${sequencer.step}]');
+      //print('seq: $signal [${sequencer.step}]');
 
       if (sequencer.state != ControlState.READY) {
         tracks.step(fire, sequencer.step);

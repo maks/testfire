@@ -1,3 +1,4 @@
+import 'package:testfire/drum_sampler.dart';
 import 'package:testfire/fire_midi.dart';
 
 import 'sequencer.dart';
@@ -37,7 +38,12 @@ class Transport {
 }
 
 class TrackController {
-  final List<_Track> tracks = List.generate(4, (index) => _Track(index));
+  final Sequencer sequencer;
+
+  TrackController(this.sequencer);
+
+  final List<_Track> tracks =
+      List.generate(Sequencer.tracks, (index) => _Track(index));
   // called each time step changes
   void step(FireDevice device, int step) {
     for (var t in tracks) {
@@ -45,7 +51,23 @@ class TrackController {
     }
   }
 
-  void reset() {}
+  void onMidiEvent(FireDevice device, int type, int id, int value) {
+    if (PadInput.isPadDown(type, id, value)) {
+      final pi = PadInput.fromMidi(id);
+      final sample = Sampler.samples.keys.toList()[pi.row];
+      sequencer.on<EditEvent>(EditEvent(sample, pi.column));
+
+      final padState = sequencer.trackdata[sample]?[pi.row] ?? false;
+      padState
+          ? device.colorPad(pi.row, pi.column, 10, 10, 100)
+          : device.colorPad(pi.row, pi.column, 0, 0, 0);
+      //print('PAD: $pi');
+    }
+  }
+
+  void reset() {
+    //TODO
+  }
 }
 
 class _Track {

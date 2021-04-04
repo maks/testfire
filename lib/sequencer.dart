@@ -34,7 +34,7 @@ class Sequencer {
   // Each steps per pattern
   static const int _stepsPerPattern = 16;
   // number of tracks sequenced
-  static const int _tracks = 4;
+  static const int tracks = 4;
   static const int _patternsPerTrack = 4;
 
   // Engine control current state
@@ -62,8 +62,8 @@ class Sequencer {
           value: (v) => List.generate(_stepsPerPattern, (i) => false));
 
   // Track note on/off data
-  static Map<DRUM_SAMPLE, List<bool>> _trackdata = _blanktape;
-  static Map<DRUM_SAMPLE, List<bool>> get trackdata => _trackdata;
+  Map<DRUM_SAMPLE, List<bool>> _trackdata = _blanktape;
+  Map<DRUM_SAMPLE, List<bool>> get trackdata => _trackdata;
 
   // Outbound signal driver - allows widgets to listen for signals from audio engine
   StreamController<Signal> _signal = StreamController<Signal>.broadcast();

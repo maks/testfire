@@ -6,6 +6,14 @@ import 'package:flutter_midi_command/flutter_midi_command.dart';
 
 abstract class ControllerDevice {}
 
+class PadColor {
+  final int r;
+  final int g;
+  final int b;
+
+  PadColor(this.r, this.g, this.b);
+}
+
 class FireDevice implements ControllerDevice {
   MidiCommand _midiCommand = MidiCommand();
 
@@ -391,13 +399,30 @@ class CCInputs {
   }
 }
 
-class PadInputs {
+class PadInput {
   static const noteDown = 144;
   static const noteUp = 128;
 
   static const baseId = 54;
   static const endId = 117;
 
+  static const padsPerRow = 16;
+
   static bool isPadDown(int cmd, int id, int value) =>
       (cmd == noteDown) && (id >= baseId) && (id <= endId);
+
+  final row;
+  final column;
+
+  PadInput(this.row, this.column);
+
+  factory PadInput.fromMidi(int id) {
+    final offset = id - 54;
+    if (offset > 63) {
+      throw Exception('invalid pad id: $id');
+    }
+    return PadInput(offset ~/ padsPerRow, offset % padsPerRow);
+  }
+
+  String toString() => 'PadInput $row:$column';
 }
