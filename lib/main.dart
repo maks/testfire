@@ -35,7 +35,6 @@ class _MyHomePageState extends State<MyHomePage> {
   final MonoCanvas oledBitmap = MonoCanvas(128, 64);
 
   final fire = FireDevice();
-
   int ledCounter = 0;
   bool toggle = false;
 
@@ -51,8 +50,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void reassemble() {
+    super.reassemble();
+    // need to disconnect from device when hot reloading otherwise midi conn wwill cuase it to hang
+    fire.disconnectDevice();
+    Future.delayed(Duration(seconds: 2)).then((_) => fire.connectDevice());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // oledBitmap.drawLine(5, 5, 50, 50, true);
     final font = Font(
       monospace: font57.monospace,
       width: font57.width,

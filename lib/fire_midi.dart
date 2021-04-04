@@ -30,6 +30,10 @@ class FireDevice implements ControllerDevice {
   Uint8List _aOLEDBitmap = Uint8List(1175);
 
   FireDevice() {
+    connectDevice();
+  }
+
+  void connectDevice() {
     _setupSubscription = _midiCommand.onMidiSetupChanged?.listen((data) {
       print("setup changed $data");
 
@@ -133,7 +137,6 @@ class FireDevice implements ControllerDevice {
     _midiCommand.sendData(Uint8List.fromList(ccData));
   }
 
-
   void _disconnect() {
     final d = _connectedDevice;
     if (d != null) {
@@ -233,7 +236,6 @@ class FireDevice implements ControllerDevice {
 
 class SmokeDevice implements ControllerDevice {}
 
-
 class IndicatorLED {
   // Midi Controller IDs on the Fire
   static const _rectLEDControllerID = [0x28, 0x29, 0x2A, 0x2B];
@@ -309,4 +311,13 @@ class ControlBankLED {
       value[0],
     ]);
   }
+}
+
+class CCButtons {
+  static const buttonDown = 144;
+  static const buttonUp = 128;
+
+  static const play = 51;
+  static const stop = 52;
+  static const record = 53;
 }
