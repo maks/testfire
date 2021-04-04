@@ -50,14 +50,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void reassemble() {
-    super.reassemble();
-    // need to disconnect from device when hot reloading otherwise midi conn wwill cuase it to hang
-    fire.disconnectDevice();
-    Future.delayed(Duration(seconds: 2)).then((_) => fire.connectDevice());
-  }
-
-  @override
   Widget build(BuildContext context) {
     final font = Font(
       monospace: font57.monospace,
