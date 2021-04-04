@@ -313,11 +313,48 @@ class ControlBankLED {
   }
 }
 
-class CCButtons {
+class CCInputs {
   static const buttonDown = 144;
   static const buttonUp = 128;
+
+  static const volume = 16;
+  static const pan = 17;
+  static const filter = 18;
+  static const resonance = 19;
+
+  static const bankSelect = 26;
+
+  static const patternUp = 31;
+  static const patternDown = 32;
+  static const browser = 33;
+  static const gridLeft = 34;
+  static const gridRight = 35;
+
+  static const muteButton1 = 36;
+  static const muteButton2 = 37;
+  static const muteButton3 = 38;
+  static const muteButton4 = 39;
+
+  static const step = 44;
+  static const note = 45;
+  static const drum = 46;
+  static const perform = 47;
+  static const shift = 48;
+  static const alt = 49;
+  static const pattern = 50;
 
   static const play = 51;
   static const stop = 52;
   static const record = 53;
+}
+
+class padInputs {
+  static const noteDown = 144;
+  static const noteUp = 128;
+
+  static const baseId = 54;
+  static const endId = 117;
+
+  static bool isPadDown(int cmd, int id, int value) =>
+      (cmd == noteDown) && (id >= baseId) && (id <= endId);
 }
