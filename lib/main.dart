@@ -3,6 +3,7 @@ import 'package:monochrome_draw/monochrome_draw.dart';
 import 'package:oled_font_57/oled_font_57.dart' as font57;
 import 'package:testfire/fire_midi.dart';
 
+import 'drum_sampler.dart';
 import 'oled_painter.dart';
 
 void main() {
@@ -124,6 +125,12 @@ class _MyHomePageState extends State<MyHomePage> {
             TextButton(
               onPressed: () => fire.sendMidi(ControlBankLED.on()),
               child: Text('Bank LED OFF'),
+            ),
+            TextButton(
+              onPressed: () {
+                Sampler.playFile(DRUM_SAMPLE.TOM2);
+              },
+              child: Text('Test Play'),
             ),
             TextButton(
               onPressed: () {

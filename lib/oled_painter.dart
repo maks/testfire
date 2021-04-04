@@ -9,8 +9,6 @@ class OLEDPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    print("canvas w:${size.width} h: ${size.height}");
-
     final paint = Paint()
       ..style = PaintingStyle.fill
       ..color = Colors.white
