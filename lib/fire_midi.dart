@@ -9,7 +9,9 @@ abstract class ControllerDevice {}
 class FireDevice implements ControllerDevice {
   MidiCommand _midiCommand = MidiCommand();
 
-  MidiDevice? connectedDevice;
+  MidiDevice? _connectedDevice;
+
+  int _unhandledCount = 0;
 
   StreamSubscription<String>? _setupSubscription;
   StreamSubscription<MidiPacket>? _dataSubscription;
@@ -35,11 +37,15 @@ class FireDevice implements ControllerDevice {
         case "deviceFound":
           print('found: $data');
           break;
-        // case "deviceOpened":
-        //   break;
+        case "deviceOpened":
+          print('device opened: $data');
+          break;
         default:
           print("Unhandled setup change: $data");
-
+          if (_unhandledCount++ > 5) {
+            _unhandledCount = 0;
+            disconnectDevice();
+          }
           break;
       }
     });
@@ -70,7 +76,7 @@ class FireDevice implements ControllerDevice {
         if (d.name == 'FL STUDIO FIRE') {
           print('connect to device: ${d.id} ${d.name}');
           _midiCommand.connectToDevice(d);
-          connectedDevice = d;
+          _connectedDevice = d;
         }
       }
     } else {
@@ -90,22 +96,6 @@ class FireDevice implements ControllerDevice {
 
   void sendBitmap(List<bool> bitmap) async {
     _sendSysexBitmap(_midiCommand, bitmap);
-  }
-
-  void sendCheckersOLED() async {
-    final f = File('../sysex/MIDI_FIRE_Sysex_CheckerBitmap.syx');
-    print('ex: ${await f.exists()}');
-    final midiData = await f.readAsBytes();
-
-    _midiCommand.sendData(Uint8List.fromList(midiData));
-  }
-
-  void sendOffOLED() async {
-    final f = File('../sysex/MIDI_FIRE_Sysex_AllBlackBitmap.syx');
-    print('ex: ${await f.exists()}');
-    final midiData = await f.readAsBytes();
-
-    _midiCommand.sendData(Uint8List.fromList(midiData));
   }
 
   void colorPad(int padRow, int padColumn, int red, int green, int blue) {
@@ -139,18 +129,13 @@ class FireDevice implements ControllerDevice {
     _midiCommand.sendData(Uint8List.fromList(midiData));
   }
 
-  void ledOn(int controllerId, int value) {
-    final Uint8List ccData = Uint8List.fromList([
-      0xB0, // midi control change code
-      controllerId,
-      value,
-    ]);
+  void sendMidi(Uint8List ccData) {
     _midiCommand.sendData(Uint8List.fromList(ccData));
   }
 
 
   void _disconnect() {
-    final d = connectedDevice;
+    final d = _connectedDevice;
     if (d != null) {
       _midiCommand.disconnectDevice(d);
       print('DISCONNECTED ${d.id} ${d.name}');
@@ -247,3 +232,81 @@ class FireDevice implements ControllerDevice {
 }
 
 class SmokeDevice implements ControllerDevice {}
+
+
+class IndicatorLED {
+  // Midi Controller IDs on the Fire
+  static const _rectLEDControllerID = [0x28, 0x29, 0x2A, 0x2B];
+
+  static const _rectLEDValues = [
+    0x0, // Off
+    0x01, // Pale Red
+    0x02, // Pale Green
+    0x03, // Bright Red
+    0x04, // Bright Green
+  ];
+
+  // index: 0-4
+  static Uint8List red(int index, {bool pale = false}) {
+    return Uint8List.fromList([
+      0xB0, // midi control change code
+      _rectLEDControllerID[index],
+      pale ? _rectLEDValues[1] : _rectLEDValues[3],
+    ]);
+  }
+
+  static Uint8List green(int index, {bool pale = false}) {
+    return Uint8List.fromList([
+      0xB0, // midi control change code
+      _rectLEDControllerID[index],
+      pale ? _rectLEDValues[2] : _rectLEDValues[4],
+    ]);
+  }
+
+  static Uint8List off(int index) {
+    return Uint8List.fromList([
+      0xB0, // midi control change code
+      _rectLEDControllerID[index],
+      _rectLEDValues[0],
+    ]);
+  }
+}
+
+class ControlBankLED {
+  static Uint8List off() {
+    return Uint8List.fromList([
+      0xB0, // midi control change code
+      0x1B,
+      0,
+    ]);
+  }
+
+  static Uint8List on({
+    bool channel = false,
+    bool mixer = false,
+    bool user1 = false,
+    bool user2 = false,
+  }) {
+    final value = Uint8List(1);
+    value[0] = 0x10;
+
+    if (channel) {
+      value[0] = value[0] | 0x01;
+    }
+    if (mixer) {
+      value[0] = value[0] | 0x02;
+    }
+    if (user1) {
+      value[0] = value[0] | 0x04;
+    }
+    if (user2) {
+      value[0] = value[0] | 0x08;
+    }
+
+    return Uint8List.fromList([
+      0xB0, // midi control change code
+      0x1B,
+      value[0],
+    ]);
+  }
+}

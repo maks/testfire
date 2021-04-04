@@ -36,6 +36,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final fire = FireDevice();
 
+  int ledCounter = 0;
+  bool toggle = false;
+
   @override
   void initState() {
     super.initState();
@@ -97,11 +100,10 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('BITMAP'),
             ),
             TextButton(
-              onPressed: fire.sendCheckersOLED,
-              child: Text('Checkers'),
-            ),
-            TextButton(
-              onPressed: fire.sendOffOLED,
+              onPressed: () {
+                oledBitmap.clear();
+                fire.sendBitmap(oledBitmap.data);
+              },
               child: Text('OLED OFF'),
             ),
             TextButton(
@@ -109,7 +111,32 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('PAD COLOR'),
             ),
             TextButton(
-              onPressed: () => fire.ledOn(0x29, 2),
+              onPressed: () => fire.sendMidi(ControlBankLED.on(channel: true)),
+              child: Text('Channel'),
+            ),
+            TextButton(
+              onPressed: () => fire.sendMidi(ControlBankLED.on(mixer: true)),
+              child: Text('MIXER'),
+            ),
+            TextButton(
+              onPressed: () => fire.sendMidi(
+                  ControlBankLED.on(channel: true, mixer: true, user2: true)),
+              child: Text('Ch,Mx,U2'),
+            ),
+            TextButton(
+              onPressed: () => fire.sendMidi(ControlBankLED.on()),
+              child: Text('Bank LED OFF'),
+            ),
+            TextButton(
+              onPressed: () {
+                toggle
+                    ? fire.sendMidi(IndicatorLED.off((ledCounter)))
+                    : fire.sendMidi(IndicatorLED.green((ledCounter)));
+                if (ledCounter == 3) {
+                  toggle = !toggle;
+                }
+                ledCounter = ledCounter < 3 ? ledCounter + 1 : 0;
+              },
               child: Text('LED On'),
             ),
           ],
