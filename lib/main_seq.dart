@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:monochrome_draw/monochrome_draw.dart';
+import 'package:testfire/fire_control/screen.dart';
 import 'package:testfire/fire_midi.dart';
 import 'package:testfire/sequencer.dart';
 
@@ -39,13 +40,20 @@ class _MyHomePageState extends State<MyHomePage> {
   final sequencer = Sequencer();
   late final transport = Transport(sequencer, _onStop);
   late final tracks = TrackController(sequencer);
+  late final menu = MainMenu(_onMenuUpdate);
+  late final Screen screen;
 
   void _midiDataListener(MidiPacket packet) {
     transport.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
     tracks.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
+    menu.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
   }
 
   void _onStop() => tracks.reset(fire);
+
+  void _onMenuUpdate() => screen.redraw();
+
+  void _paintToOLED(List<bool> data) => fire.sendBitmap(data);
 
   @override
   void initState() {
@@ -55,6 +63,8 @@ class _MyHomePageState extends State<MyHomePage> {
         tracks.step(fire, sequencer.step);
       }
     });
+    Future.delayed(Duration(milliseconds: 500))
+        .then<void>((_) => screen = Screen(_paintToOLED, menu));
   }
 
   @override

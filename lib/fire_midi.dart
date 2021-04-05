@@ -369,12 +369,17 @@ class ControlBankLED {
 class CCInputs {
   static const buttonDown = 144;
   static const buttonUp = 128;
+  static const dialRotate = 176;
+
+  static const rotateLeft = 127;
+  static const rotateRight = 1;
 
   static const volume = 16;
   static const pan = 17;
   static const filter = 18;
   static const resonance = 19;
 
+  static const selectDown = 25;
   static const bankSelect = 26;
 
   static const patternUp = 31;
@@ -399,6 +404,8 @@ class CCInputs {
   static const play = 51;
   static const stop = 52;
   static const record = 53;
+
+  static const select = 118;
 
   // All
   static const off = 0;
