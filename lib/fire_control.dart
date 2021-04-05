@@ -56,7 +56,7 @@ class TrackController {
   // called each time step changes
   void step(FireDevice device, int step) {
     for (var t in tracks) {
-      final sample = Sampler.samples.keys.toList()[t.row];
+      final sample = DrumSampler.samples.keys.toList()[t.row];
 
       final prevStep = (step == 0) ? (Sequencer.stepsPerPattern - 1) : step - 1;
       final prevPadState = sequencer.trackdata[sample]?[prevStep] ?? false;
@@ -71,7 +71,7 @@ class TrackController {
   void onMidiEvent(FireDevice device, int type, int id, int value) {
     if (PadInput.isPadDown(type, id, value)) {
       final pad = PadInput.fromMidi(id);
-      final sample = Sampler.samples.keys.toList()[pad.row];
+      final sample = DrumSampler.samples.keys.toList()[pad.row];
 
       sequencer.on<EditEvent>(EditEvent(sample, pad.column));
 

@@ -138,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             TextButton(
               onPressed: () {
-                Sampler.playFile(DRUM_SAMPLE.TOM2);
+                DrumSampler.playFile(DRUM_SAMPLE.TOM2);
               },
               child: Text('Test Play'),
             ),

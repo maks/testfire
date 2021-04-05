@@ -84,7 +84,7 @@ class Sequencer {
         if (state == ControlState.RECORD) {
           return processInput(event as PadEvent);
         }
-        Sampler.playFile((event as PadEvent).sample);
+        DrumSampler.playFile((event as PadEvent).sample);
         return;
 
       case TickEvent:
@@ -127,7 +127,7 @@ class Sequencer {
     trackdata[event.sample]?[event.position] =
         !trackdata[event.sample]![event.position];
     if (trackdata[event.sample]![event.position]) {
-      Sampler.playFile(event.sample);
+      DrumSampler.playFile(event.sample);
       print(
           'samp on:${event.position} - ${trackdata[event.sample]?[event.position]}');
     }
@@ -168,7 +168,7 @@ class Sequencer {
 
     trackdata.forEach((DRUM_SAMPLE sample, List<bool> track) {
       if (track[step]) {
-        Sampler.playFile(sample);
+        DrumSampler.playFile(sample);
       }
     });
 
