@@ -50,8 +50,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     sequencer.listen((signal) {
-      //print('seq: $signal [${sequencer.step}]');
-
       if (sequencer.state != ControlState.READY) {
         tracks.step(fire, sequencer.step);
       }

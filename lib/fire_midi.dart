@@ -56,6 +56,12 @@ class FireDevice implements ControllerDevice {
         case "deviceOpened":
           print('device opened: $data');
           break;
+        case "deviceConnected":
+          print('device connected: $data');
+          // clear fire for action
+          sendAllOff();
+          print('clear fire');
+          break;
         default:
           print("Unhandled setup change: $data");
           if (_unhandledCount++ > 5) {
