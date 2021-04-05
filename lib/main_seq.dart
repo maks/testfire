@@ -36,13 +36,15 @@ class _MyHomePageState extends State<MyHomePage> {
   final MonoCanvas oledBitmap = MonoCanvas(128, 64);
   late final fire = FireDevice(_midiDataListener);
   final sequencer = Sequencer();
-  late final transport = Transport(sequencer);
+  late final transport = Transport(sequencer, _onStop);
   late final tracks = TrackController(sequencer);
 
   void _midiDataListener(MidiPacket packet) {
     transport.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
     tracks.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
   }
+
+  void _onStop() => tracks.reset(fire);
 
   @override
   void initState() {

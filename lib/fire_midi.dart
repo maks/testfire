@@ -146,6 +146,39 @@ class FireDevice implements ControllerDevice {
     _midiCommand.sendData(Uint8List.fromList(midiData));
   }
 
+  void allPadsColor(PadColor color) {
+    final Uint8List sysexHeader = Uint8List.fromList([
+      0xF0, // System Exclusive
+      0x47, // Akai Manufacturer ID
+      0x7F, // The All-Call address
+      0x43, // “Fire” product
+      0x65, // Write LED cmd
+      0x02, // mesg length - high byte
+      0x00, // mesg length - low byte
+    ]);
+    final Uint8List sysexFooter = Uint8List.fromList([
+      0xF7, // End of Exclusive
+    ]);
+
+    final b = BytesBuilder();
+    b.add(sysexHeader);
+
+    for (int idx = 0; idx < 64; idx++) {
+      final Uint8List ledData = Uint8List.fromList([
+        idx,
+        color.r,
+        color.g,
+        color.b,
+      ]);
+      b.add(ledData);
+    }
+
+    b.add(sysexFooter);
+
+    final midiData = b.toBytes();
+    _midiCommand.sendData(Uint8List.fromList(midiData));
+  }
+
   void sendMidi(Uint8List ccData) {
     _midiCommand.sendData(Uint8List.fromList(ccData));
   }
@@ -240,11 +273,12 @@ class FireDevice implements ControllerDevice {
     midiCmd.sendData(Uint8List.fromList(midiData));
   }
 
-  //debug: write out bytes sent in sysex cmd to a sysex file
-  // void _debugSysexToFile(Uint8List midiData) {
-  //   File testout = File('testfire1.sysex');
-  //   testout.writeAsBytes(midiData);
-  // }
+  /// debug: write out bytes sent in sysex cmd to a sysex file
+  // ignore: unused_element
+  void _debugSysexToFile(Uint8List midiData) {
+    File testout = File('testfire1.sysex');
+    testout.writeAsBytes(midiData);
+  }
 }
 
 class SmokeDevice implements ControllerDevice {}

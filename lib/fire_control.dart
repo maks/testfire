@@ -5,8 +5,9 @@ import 'sequencer.dart';
 
 class Transport {
   final Sequencer sequencer;
+  final Function() onStop;
 
-  Transport(this.sequencer);
+  Transport(this.sequencer, this.onStop);
 
   void onMidiEvent(FireDevice device, int type, int id, int value) {
     if (type == CCInputs.buttonDown) {
@@ -31,6 +32,7 @@ class Transport {
           _allOff(device);
           device.sendMidi(CCInputs.on(CCInputs.stop, CCInputs.green3));
           sequencer.reset();
+          onStop();
           break;
       }
     }
@@ -74,20 +76,19 @@ class TrackController {
       sequencer.on<EditEvent>(EditEvent(sample, pad.column));
 
       final padState = sequencer.trackdata[sample]?[pad.row] ?? false;
-      print('pad state: $padState');
       final padColor = tracks[pad.row].step(padState);
       device.colorPad(pad.row, pad.column, padColor);
-      print('PAD: $pad');
     }
   }
 
-  void reset() {
+  void reset(FireDevice device) {
     sequencer.reset();
-    _clearAllPads();
+    _clearAllPads(device);
   }
 
-  void _clearAllPads() {
-    //TODO
+  void _clearAllPads(FireDevice device) {
+    print('clear PADs');
+    device.allPadsColor(PadColor.off());
   }
 }
 
