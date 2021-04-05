@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:monochrome_draw/monochrome_draw.dart';
-import 'package:oled_font_57/oled_font_57.dart' as font57;
+import 'package:testfire/fire_control/screen.dart';
 import 'package:testfire/fire_midi.dart';
+import 'package:testfire/sequencer.dart';
 
-import 'drum_sampler.dart';
-import 'oled_painter.dart';
+import 'fire_control/menu.dart';
+import 'fire_control/tracks.dart';
+import 'fire_control/transport.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,11 +17,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TestFire',
+      title: 'Fire Sequence',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'TestFire'),
+      home: MyHomePage(title: 'Fire Sequence'),
     );
   }
 }
@@ -34,14 +37,35 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final MonoCanvas oledBitmap = MonoCanvas(128, 64);
+  late final fire = FireDevice(_midiDataListener);
+  final sequencer = Sequencer();
+  late final transport = Transport(sequencer, _onStop);
+  late final tracks = TrackController(sequencer);
+  late final menu = MainMenu(_onMenuUpdate);
+  late final Screen screen;
 
-  final fire = FireDevice((_) {});
-  int ledCounter = 0;
-  bool toggle = false;
+  void _midiDataListener(MidiPacket packet) {
+    transport.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
+    tracks.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
+    menu.onMidiEvent(fire, packet.data[0], packet.data[1], packet.data[2]);
+  }
+
+  void _onStop() => tracks.reset(fire);
+
+  void _onMenuUpdate() => screen.redraw();
+
+  void _paintToOLED(List<bool> data) => fire.sendBitmap(data);
 
   @override
   void initState() {
     super.initState();
+    sequencer.listen((signal) {
+      if (sequencer.state != ControlState.READY) {
+        tracks.step(fire, sequencer.step);
+      }
+    });
+    Future.delayed(Duration(milliseconds: 500))
+        .then<void>((_) => screen = Screen(_paintToOLED, menu));
   }
 
   @override
@@ -52,19 +76,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final font = Font(
-      monospace: font57.monospace,
-      width: font57.width,
-      height: font57.height,
-      fontData: font57.fontData,
-      lookup: font57.lookup,
-    );
-    oledBitmap.writeString(font, 1, 'hello fire', true, true, 1);
-    oledBitmap.setCursor(0, 10);
-    oledBitmap.writeString(font, 2, 'Large Font', true, true, 1);
-    oledBitmap.setCursor(0, 27);
-    oledBitmap.writeString(font, 3, 'ABCD', true, true, 1);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title!),
@@ -73,86 +84,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                width: 128,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                ),
-                child: CustomPaint(
-                  painter: OLEDPainter(oledBitmap.data),
-                ),
-              ),
-            ),
             TextButton(
               onPressed: fire.sendAllOff,
               child: Text('ALL OFF'),
-            ),
-            TextButton(
-              onPressed: fire.sendAllOn,
-              child: Text('ALL ON'),
-            ),
-            TextButton(
-              onPressed: () => fire.sendBitmap(oledBitmap.data),
-              child: Text('BITMAP'),
-            ),
-            TextButton(
-              onPressed: () {
-                oledBitmap.clear();
-                fire.sendBitmap(oledBitmap.data);
-              },
-              child: Text('OLED OFF'),
-            ),
-            TextButton(
-              onPressed: () => fire.colorPad(0, 0, PadColor(127, 0, 0)),
-              child: Text('PAD COLOR'),
-            ),
-            TextButton(
-              onPressed: () => fire.sendMidi(ControlBankLED.on(channel: true)),
-              child: Text('Channel'),
-            ),
-            TextButton(
-              onPressed: () => fire.sendMidi(ControlBankLED.on(mixer: true)),
-              child: Text('MIXER'),
-            ),
-            TextButton(
-              onPressed: () => fire.sendMidi(
-                  ControlBankLED.on(channel: true, mixer: true, user2: true)),
-              child: Text('Ch,Mx,U2'),
-            ),
-            TextButton(
-              onPressed: () => fire.sendMidi(ControlBankLED.on()),
-              child: Text('Bank LED OFF'),
-            ),
-            TextButton(
-              onPressed: () =>
-                  fire.sendMidi(CCInputs.on(CCInputs.play, CCInputs.green3)),
-              child: Text('Play button On'),
-            ),
-            TextButton(
-              onPressed: () =>
-                  fire.sendMidi(CCInputs.on(CCInputs.play, CCInputs.off)),
-              child: Text('Play button Off'),
-            ),
-            TextButton(
-              onPressed: () {
-                DrumSampler.playFile(DRUM_SAMPLE.TOM2);
-              },
-              child: Text('Test Play'),
-            ),
-            TextButton(
-              onPressed: () {
-                toggle
-                    ? fire.sendMidi(IndicatorLED.off((ledCounter)))
-                    : fire.sendMidi(IndicatorLED.green((ledCounter)));
-                if (ledCounter == 3) {
-                  toggle = !toggle;
-                }
-                ledCounter = ledCounter < 3 ? ledCounter + 1 : 0;
-              },
-              child: Text('LED On'),
             ),
           ],
         ),

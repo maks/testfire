@@ -8,13 +8,13 @@
             "name": "testfire",
             "request": "launch",
             "type": "dart",
-            "program": "lib/main.dart"
+            "program": "lib/main_tester.dart"
         },
         {
             "name": "sequencer",
             "request": "launch",
             "type": "dart",
-            "program": "lib/main_seq.dart"
+            "program": "lib/main.dart"
         }
     ]
 }
