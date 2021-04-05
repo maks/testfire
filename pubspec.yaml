@@ -14,7 +14,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_midi_command: ^0.3.0
   oled_font_57: ^1.0.1
-  monochrome_draw: ^1.1.0
+  monochrome_draw: ^1.1.1
 
 dev_dependencies:
   flutter_test:

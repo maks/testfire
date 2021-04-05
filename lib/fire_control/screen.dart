@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:monochrome_draw/monochrome_draw.dart';
 import 'package:oled_font_57/oled_font_57.dart' as font57;
 
@@ -33,7 +35,7 @@ class Screen {
 
   void drawContent(List<String> content) {
     final offset = lineHeight * 2;
-    for (int line = 0; line < maxVisibleItems; line++) {
+    for (int line = 0; line < min(content.length, maxVisibleItems); line++) {
       oledBitmap.setCursor(0, (8 * line) + offset);
       oledBitmap.writeString(font, 1, content[line], true, true, 1);
     }
