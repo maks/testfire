@@ -5,6 +5,7 @@ import 'package:testfire/fire_control/screen.dart';
 import 'package:testfire/fire_midi.dart';
 import 'package:testfire/sequencer.dart';
 
+import 'fire_control/menu.dart';
 import 'fire_control/tracks.dart';
 import 'fire_control/transport.dart';
 
