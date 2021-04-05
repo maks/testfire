@@ -4,7 +4,8 @@ import 'package:monochrome_draw/monochrome_draw.dart';
 import 'package:testfire/fire_midi.dart';
 import 'package:testfire/sequencer.dart';
 
-import 'fire_control.dart';
+import 'fire_control/tracks.dart';
+import 'fire_control/transport.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,11 +15,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SeqFire',
+      title: 'Fire Sequence',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'SeqFire'),
+      home: MyHomePage(title: 'Fire Sequence'),
     );
   }
 }
