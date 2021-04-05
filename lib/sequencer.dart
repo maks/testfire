@@ -36,6 +36,7 @@ class Sequencer {
   // number of tracks sequenced
   static const int tracks = 4;
   static const int patternsPerTrack = 4;
+  static const int timeSignature = 4;
 
   // Engine control current state
   ControlState _state = ControlState.READY;
@@ -53,7 +54,8 @@ class Sequencer {
   }
 
   // Timer tick duration
-  Duration get _tick => Duration(milliseconds: (60000 / bpm).round());
+  Duration get _tick =>
+      Duration(milliseconds: (60000 / bpm / timeSignature).round());
 
   // Generates a new blank track data structure
   static Map<DRUM_SAMPLE, List<bool>> get _blanktape =>
