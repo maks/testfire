@@ -12,9 +12,14 @@ class Transport {
     if (type == CCInputs.buttonDown) {
       switch (id) {
         case CCInputs.play:
-          sequencer.on<ControlEvent>(ControlEvent(ControlState.PLAY));
           _allOff(device);
-          device.sendMidi(CCInputs.on(CCInputs.play, CCInputs.green3));
+          if (sequencer.state == ControlState.PLAY) {
+            sequencer.on<ControlEvent>(ControlEvent(ControlState.PAUSE));
+            device.sendMidi(CCInputs.on(CCInputs.play, CCInputs.yellow3));
+          } else {
+            sequencer.on<ControlEvent>(ControlEvent(ControlState.PLAY));
+            device.sendMidi(CCInputs.on(CCInputs.play, CCInputs.green3));
+          }
           break;
         case CCInputs.record:
           sequencer.on<ControlEvent>(ControlEvent(ControlState.RECORD));
@@ -25,6 +30,7 @@ class Transport {
           sequencer.on<ControlEvent>(ControlEvent(ControlState.READY));
           _allOff(device);
           device.sendMidi(CCInputs.on(CCInputs.stop, CCInputs.green3));
+          sequencer.reset();
           break;
       }
     }
@@ -64,9 +70,11 @@ class TrackController {
     if (PadInput.isPadDown(type, id, value)) {
       final pad = PadInput.fromMidi(id);
       final sample = Sampler.samples.keys.toList()[pad.row];
+
       sequencer.on<EditEvent>(EditEvent(sample, pad.column));
 
       final padState = sequencer.trackdata[sample]?[pad.row] ?? false;
+      print('pad state: $padState');
       final padColor = tracks[pad.row].step(padState);
       device.colorPad(pad.row, pad.column, padColor);
       print('PAD: $pad');
@@ -75,6 +83,11 @@ class TrackController {
 
   void reset() {
     sequencer.reset();
+    _clearAllPads();
+  }
+
+  void _clearAllPads() {
+    //TODO
   }
 }
 

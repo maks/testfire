@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'drum_sampler.dart';
 
-enum ControlState { READY, PLAY, RECORD }
+enum ControlState { READY, PLAY, PAUSE, RECORD }
 
 class Event {
   const Event();
@@ -88,7 +88,7 @@ class Sequencer {
         return;
 
       case TickEvent:
-        if (state == ControlState.READY) {
+        if (state == ControlState.READY || state == ControlState.PAUSE) {
           return;
         }
         return next();
@@ -110,7 +110,9 @@ class Sequencer {
           start();
         }
         break;
-
+      case ControlState.PAUSE:
+        pause();
+        break;
       case ControlState.READY:
       default:
         reset();
@@ -126,6 +128,8 @@ class Sequencer {
         !trackdata[event.sample]![event.position];
     if (trackdata[event.sample]![event.position]) {
       Sampler.playFile(event.sample);
+      print(
+          'samp on:${event.position} - ${trackdata[event.sample]?[event.position]}');
     }
     _signal.add(Signal());
   }
@@ -144,16 +148,17 @@ class Sequencer {
   void reset() {
     step = 0;
     _watch.reset();
-    if (_timer != null) {
-      _timer?.cancel();
-    }
+    _timer?.cancel();
   }
 
   // Start the sequencer
   void start() {
-    reset();
     _watch.start();
     _timer = Timer.periodic(_tick, (t) => on<TickEvent>(TickEvent()));
+  }
+
+  void pause() {
+    _watch.stop();
   }
 
   // Process the next step
