@@ -44,41 +44,46 @@ class TrackController {
 
   final List<_Track> tracks =
       List.generate(Sequencer.tracks, (index) => _Track(index));
+
   // called each time step changes
   void step(FireDevice device, int step) {
     for (var t in tracks) {
-      t.step(device, step);
+      final sample = Sampler.samples.keys.toList()[t.row];
+
+      final prevStep = (step == 0) ? (Sequencer.stepsPerPattern - 1) : step - 1;
+      final prevPadState = sequencer.trackdata[sample]?[prevStep] ?? false;
+      final prevColor = t.step(prevPadState);
+      device.colorPad(t.row, prevStep, prevColor);
+
+      final padColor = tracks[t.row].beatStep();
+      device.colorPad(t.row, step, padColor);
     }
   }
 
   void onMidiEvent(FireDevice device, int type, int id, int value) {
     if (PadInput.isPadDown(type, id, value)) {
-      final pi = PadInput.fromMidi(id);
-      final sample = Sampler.samples.keys.toList()[pi.row];
-      sequencer.on<EditEvent>(EditEvent(sample, pi.column));
+      final pad = PadInput.fromMidi(id);
+      final sample = Sampler.samples.keys.toList()[pad.row];
+      sequencer.on<EditEvent>(EditEvent(sample, pad.column));
 
-      final padState = sequencer.trackdata[sample]?[pi.row] ?? false;
-      padState
-          ? device.colorPad(pi.row, pi.column, 10, 10, 100)
-          : device.colorPad(pi.row, pi.column, 0, 0, 0);
-      //print('PAD: $pi');
+      final padState = sequencer.trackdata[sample]?[pad.row] ?? false;
+      final padColor = tracks[pad.row].step(padState);
+      device.colorPad(pad.row, pad.column, padColor);
+      print('PAD: $pad');
     }
   }
 
   void reset() {
-    //TODO
+    sequencer.reset();
   }
 }
 
 class _Track {
   final int row;
-
   _Track(this.row);
 
-  void step(FireDevice device, int step) {
-    int prevStep = (step == 0) ? 15 : step - 1;
+  PadColor step(bool padState) =>
+      padState ? PadColor(0, 0, 127) : PadColor.off();
 
-    device.colorPad(row, prevStep, 0, 0, 0);
-    device.colorPad(row, step, 0, 0, 127);
-  }
+  PadColor beatStep() => PadColor(50, 50, 100);
 }

@@ -106,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('OLED OFF'),
             ),
             TextButton(
-              onPressed: () => fire.colorPad(0, 0, 127, 0, 0),
+              onPressed: () => fire.colorPad(0, 0, PadColor(127, 0, 0)),
               child: Text('PAD COLOR'),
             ),
             TextButton(

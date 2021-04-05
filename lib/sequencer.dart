@@ -32,10 +32,10 @@ class Signal {}
 /// initially based on: https://github.com/kenreilly/flutter-drum-machine-demo
 class Sequencer {
   // Each steps per pattern
-  static const int _stepsPerPattern = 16;
+  static const int stepsPerPattern = 16;
   // number of tracks sequenced
   static const int tracks = 4;
-  static const int _patternsPerTrack = 4;
+  static const int patternsPerTrack = 4;
 
   // Engine control current state
   ControlState _state = ControlState.READY;
@@ -59,7 +59,7 @@ class Sequencer {
   static Map<DRUM_SAMPLE, List<bool>> get _blanktape =>
       Map.fromIterable(DRUM_SAMPLE.values,
           key: (k) => k,
-          value: (v) => List.generate(_stepsPerPattern, (i) => false));
+          value: (v) => List.generate(stepsPerPattern, (i) => false));
 
   // Track note on/off data
   Map<DRUM_SAMPLE, List<bool>> _trackdata = _blanktape;
@@ -134,7 +134,7 @@ class Sequencer {
   void processInput(PadEvent event) {
     int position = (_watch.elapsedMilliseconds < 900)
         ? step
-        : (step != (_stepsPerPattern - 1))
+        : (step != (stepsPerPattern - 1))
             ? step + 1
             : 0;
     edit(EditEvent(event.sample, position));
@@ -158,7 +158,7 @@ class Sequencer {
 
   // Process the next step
   void next() {
-    step = (step == (_stepsPerPattern - 1)) ? 0 : step + 1;
+    step = (step == (stepsPerPattern - 1)) ? 0 : step + 1;
     _watch.reset();
 
     trackdata.forEach((DRUM_SAMPLE sample, List<bool> track) {

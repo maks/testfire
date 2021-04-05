@@ -12,6 +12,8 @@ class PadColor {
   final int b;
 
   PadColor(this.r, this.g, this.b);
+
+  factory PadColor.off() => PadColor(0, 0, 0);
 }
 
 class FireDevice implements ControllerDevice {
@@ -113,7 +115,7 @@ class FireDevice implements ControllerDevice {
     _sendSysexBitmap(_midiCommand, bitmap);
   }
 
-  void colorPad(int padRow, int padColumn, int red, int green, int blue) {
+  void colorPad(int padRow, int padColumn, PadColor color) {
     final Uint8List sysexHeader = Uint8List.fromList([
       0xF0, // System Exclusive
       0x47, // Akai Manufacturer ID
@@ -129,9 +131,9 @@ class FireDevice implements ControllerDevice {
 
     final Uint8List ledData = Uint8List.fromList([
       (padRow * 16 + padColumn),
-      red,
-      green,
-      blue,
+      color.r,
+      color.g,
+      color.b,
     ]);
 
     final b = BytesBuilder();
