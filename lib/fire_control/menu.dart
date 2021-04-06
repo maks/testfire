@@ -1,3 +1,6 @@
+import 'package:riverpod/riverpod.dart';
+import 'package:testfire/session/sessionProvider.dart';
+
 import '../fire_midi.dart';
 import 'page.dart';
 import 'screen.dart';
@@ -13,23 +16,22 @@ abstract class MenuParam extends SelectableItem {
 }
 
 class IntMenuParam extends MenuParam {
-  int _value;
+  int get value => container.read(sessionProvider).bpm;
 
-  int get value => _value;
+  final container = ProviderContainer();
 
-  IntMenuParam(String name, int defaultValue, Function() onupdate)
-      : _value = defaultValue,
-        super(name, onupdate);
+  IntMenuParam(String name, int defaultValue, Function() onUpdate)
+      : super(name, onUpdate);
 
   @override
   void next() {
-    _value++;
+    container.read(sessionProvider.notifier).incrementBpm();
     onUpdate();
   }
 
   @override
   void prev() {
-    _value--;
+    container.read(sessionProvider.notifier).decrementBpm();
     onUpdate();
   }
 
@@ -40,7 +42,7 @@ class IntMenuParam extends MenuParam {
   void draw(Screen s) {
     s.clear();
     s.drawHeading(title);
-    s.drawContent([_value.toString()], large: true);
+    s.drawContent([value.toString()], large: true);
   }
 }
 
