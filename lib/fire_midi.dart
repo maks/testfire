@@ -73,10 +73,7 @@ class FireDevice implements ControllerDevice {
     });
 
     _dataSubscription = _midiCommand.onMidiDataReceived?.listen((packet) {
-      print("MIDI data: $packet");
-      for (var d in packet.data) {
-        print('midi data:$d');
-      }
+      print('midi data:${packet.data}');
       onMidiData(packet);
     });
 

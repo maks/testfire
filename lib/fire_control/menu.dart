@@ -1,11 +1,15 @@
 import '../fire_midi.dart';
+import 'page.dart';
 import 'screen.dart';
 import 'selectable_list.dart';
 
 abstract class MenuParam extends SelectableItem {
   final String title;
+  final Function() onUpdate;
 
-  MenuParam(this.title);
+  MenuParam(this.title, this.onUpdate);
+
+  void draw(Screen s);
 }
 
 class IntMenuParam extends MenuParam {
@@ -13,18 +17,31 @@ class IntMenuParam extends MenuParam {
 
   int get value => _value;
 
-  IntMenuParam(String name, int defaultValue)
+  IntMenuParam(String name, int defaultValue, Function() onupdate)
       : _value = defaultValue,
-        super(name);
+        super(name, onupdate);
 
   @override
-  void next() => _value++;
+  void next() {
+    _value++;
+    onUpdate();
+  }
 
   @override
-  void prev() => _value--;
+  void prev() {
+    _value--;
+    onUpdate();
+  }
 
   @override
   void select() {/* NA */}
+
+  @override
+  void draw(Screen s) {
+    s.clear();
+    s.drawHeading(title);
+    s.drawContent([_value.toString()], large: true);
+  }
 }
 
 abstract class Menu {
@@ -61,7 +78,7 @@ class MainMenu implements Menu {
           SelectableList<MenuParam>(
             onUpdate,
             [
-              IntMenuParam('BPM', 120),
+              IntMenuParam('BPM', 120, onUpdate),
             ],
           ),
           onUpdate,
