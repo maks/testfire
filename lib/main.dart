@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:monochrome_draw/monochrome_draw.dart';
+import 'package:riverpod/riverpod.dart';
 import 'package:testfire/fire_control/screen.dart';
 import 'package:testfire/fire_midi.dart';
 import 'package:testfire/sequencer.dart';
@@ -36,12 +37,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final container = ProviderContainer();
+
   final MonoCanvas oledBitmap = MonoCanvas(128, 64);
   late final fire = FireDevice(_midiDataListener);
-  final sequencer = Sequencer();
+  late final sequencer = Sequencer(container);
   late final transport = Transport(sequencer, _onStop);
   late final tracks = TrackController(sequencer);
-  late final menu = MainMenu(_onMenuUpdate);
+  late final menu = MainMenu(_onMenuUpdate, container);
   late final Screen screen;
 
   void _midiDataListener(MidiPacket packet) {

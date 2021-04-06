@@ -1,4 +1,3 @@
-import 'package:riverpod/riverpod.dart';
 import 'package:testfire/session/sessionProvider.dart';
 
 import '../fire_midi.dart';
@@ -18,9 +17,10 @@ abstract class MenuParam extends SelectableItem {
 class IntMenuParam extends MenuParam {
   int get value => container.read(sessionProvider).bpm;
 
-  final container = ProviderContainer();
+  final container;
 
-  IntMenuParam(String name, int defaultValue, Function() onUpdate)
+  IntMenuParam(
+      String name, int defaultValue, Function() onUpdate, this.container)
       : super(name, onUpdate);
 
   @override
@@ -71,7 +71,7 @@ class MainMenu implements Menu {
   @override
   Function() onUpdate;
 
-  MainMenu(this.onUpdate) {
+  MainMenu(this.onUpdate, container) {
     pages = SelectableList(
       onUpdate,
       [
@@ -80,7 +80,7 @@ class MainMenu implements Menu {
           SelectableList<MenuParam>(
             onUpdate,
             [
-              IntMenuParam('BPM', 120, onUpdate),
+              IntMenuParam('BPM', 120, onUpdate, container),
             ],
           ),
           onUpdate,

@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:riverpod/riverpod.dart';
+import 'package:testfire/session/sessionProvider.dart';
+
 import 'drum_sampler.dart';
 
 enum ControlState { READY, PLAY, PAUSE, RECORD }
@@ -38,20 +41,24 @@ class Sequencer {
   static const int patternsPerTrack = 4;
   static const int timeSignature = 4;
 
+  late final ProviderSubscription sessionSubscription;
+  final ProviderContainer container;
+
+  Sequencer(this.container) {
+    sessionSubscription = container.listen(sessionProvider, didChange: (_) {
+      if (_state != ControlState.READY) {
+        synchronize();
+      }
+      _signal.add(Signal());
+    });
+  }
+
   // Engine control current state
   ControlState _state = ControlState.READY;
   get state => _state;
 
   // Beats per minute
-  int _bpm = 120;
-  int get bpm => _bpm;
-  set bpm(int x) {
-    _bpm = x;
-    if (_state != ControlState.READY) {
-      synchronize();
-    }
-    _signal.add(Signal());
-  }
+  int get bpm => container.read(sessionProvider).bpm;
 
   // Timer tick duration
   Duration get _tick =>
@@ -69,7 +76,12 @@ class Sequencer {
 
   // Outbound signal driver - allows widgets to listen for signals from audio engine
   StreamController<Signal> _signal = StreamController<Signal>.broadcast();
-  Future<void> close() => _signal.close(); // Not used but required by SDK
+
+  Future<void> close() async {
+    sessionSubscription.close();
+    _signal.close(); // Not used but required by SDK
+  }
+
   StreamSubscription<Signal> listen(Function(Signal) onData) =>
       _signal.stream.listen(onData);
 
