@@ -1,4 +1,4 @@
-import 'package:testfire/session/sessionCubit.dart';
+import 'package:testfire/session/session_cubit.dart';
 
 import '../fire_midi.dart';
 import 'page.dart';
@@ -25,7 +25,6 @@ class IntMenuParam extends MenuParam {
 
   IntMenuParam(
     String name,
-    int defaultValue,
     Function() onUpdate, {
     required this.valueStream,
     required this.onIncrement,
@@ -76,6 +75,7 @@ class MainMenu implements Menu {
   @override
   String get title => _title;
 
+  @override
   late final SelectableList<Page> pages;
 
   Page get selectedPage => pages.selectedItem;
@@ -96,7 +96,6 @@ class MainMenu implements Menu {
             [
               IntMenuParam(
                 'BPM',
-                120,
                 onUpdate,
                 valueStream: sessionCubit.stream.map((v) => v.bpm),
                 onIncrement: sessionCubit.incrementBpm,

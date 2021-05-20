@@ -4,7 +4,7 @@ import 'package:monochrome_draw/monochrome_draw.dart';
 import 'package:testfire/fire_control/screen.dart';
 import 'package:testfire/fire_midi.dart';
 import 'package:testfire/sequencer.dart';
-import 'package:testfire/session/sessionCubit.dart';
+import 'package:testfire/session/session_cubit.dart';
 
 import 'fire_control/menu.dart';
 import 'fire_control/tracks.dart';
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
         tracks.step(fire, sequencer.step);
       }
     });
-    Future.delayed(Duration(milliseconds: 500))
+    Future<void>.delayed(Duration(milliseconds: 500))
         .then<void>((_) => screen = Screen(_paintToOLED, menu));
   }
 

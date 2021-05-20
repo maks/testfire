@@ -10,6 +10,7 @@ class Page extends SelectableItem {
 
   Page(this.title, this.params, this.onUpdate);
 
+  @override
   void next() {
     if (_showingParam) {
       params.selectedItem.next();
@@ -18,6 +19,7 @@ class Page extends SelectableItem {
     }
   }
 
+  @override
   void prev() {
     if (_showingParam) {
       params.selectedItem.prev();
@@ -26,6 +28,7 @@ class Page extends SelectableItem {
     }
   }
 
+  @override
   void select() {
     if (!_showingParam) {
       _showingParam = true;

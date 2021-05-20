@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:testfire/session/sessionCubit.dart';
+import 'package:testfire/session/session_cubit.dart';
 
 import 'drum_sampler.dart';
 import 'session/session.dart';
@@ -54,7 +54,7 @@ class Sequencer {
 
   // Engine control current state
   ControlState _state = ControlState.READY;
-  get state => _state;
+  ControlState get state => _state;
 
   int _lastBpm = 0;
 
@@ -67,16 +67,17 @@ class Sequencer {
 
   // Generates a new blank track data structure
   static Map<DRUM_SAMPLE, List<bool>> get _blanktape =>
-      Map.fromIterable(DRUM_SAMPLE.values,
-          key: (k) => k,
-          value: (v) => List.generate(stepsPerPattern, (i) => false));
+      <DRUM_SAMPLE, List<bool>>{
+        for (var v in DRUM_SAMPLE.values)
+          v: List.generate(stepsPerPattern, (_) => false)
+      };
 
   // Track note on/off data
-  Map<DRUM_SAMPLE, List<bool>> _trackdata = _blanktape;
+  final Map<DRUM_SAMPLE, List<bool>> _trackdata = _blanktape;
   Map<DRUM_SAMPLE, List<bool>> get trackdata => _trackdata;
 
   // Outbound signal driver - allows widgets to listen for signals from audio engine
-  StreamController<Signal> _signal = StreamController<Signal>.broadcast();
+  final StreamController<Signal> _signal = StreamController<Signal>.broadcast();
 
   Future<void> close() async {
     await sessionSubscription?.cancel();
@@ -89,7 +90,7 @@ class Sequencer {
   // temp single track step
   int step = 0;
 
-  Stopwatch _watch = Stopwatch();
+  final Stopwatch _watch = Stopwatch();
   Timer? _timer;
 
   // Incoming event handler
@@ -117,7 +118,7 @@ class Sequencer {
   }
 
   // Controller state change handler
-  control(ControlEvent event) {
+  void control(ControlEvent event) {
     switch (event.state) {
       case ControlState.PLAY:
       case ControlState.RECORD:
@@ -151,7 +152,7 @@ class Sequencer {
 
   // Quantize input using the stopwatch
   void processInput(PadEvent event) {
-    int position = (_watch.elapsedMilliseconds < 900)
+    final int position = (_watch.elapsedMilliseconds < 900)
         ? step
         : (step != (stepsPerPattern - 1))
             ? step + 1
