@@ -1,4 +1,4 @@
-import 'package:testfire/session/sessionProvider.dart';
+import 'package:testfire/session/sessionCubit.dart';
 
 import '../fire_midi.dart';
 import 'page.dart';
@@ -15,23 +15,37 @@ abstract class MenuParam extends SelectableItem {
 }
 
 class IntMenuParam extends MenuParam {
-  int get value => container.read(sessionProvider).bpm;
+  final Stream<int> valueStream;
+  final Function() onIncrement;
+  final Function() onDecrement;
 
-  final container;
+  int _lastValue = 0;
+
+  int get value => _lastValue;
 
   IntMenuParam(
-      String name, int defaultValue, Function() onUpdate, this.container)
-      : super(name, onUpdate);
+    String name,
+    int defaultValue,
+    Function() onUpdate, {
+    required this.valueStream,
+    required this.onIncrement,
+    required this.onDecrement,
+  }) : super(name, onUpdate) {
+    //TODO: need to be able to close stream subscription
+    valueStream.forEach((v) {
+      _lastValue = v;
+    });
+  }
 
   @override
   void next() {
-    container.read(sessionProvider.notifier).incrementBpm();
+    onIncrement();
     onUpdate();
   }
 
   @override
   void prev() {
-    container.read(sessionProvider.notifier).decrementBpm();
+    onDecrement();
     onUpdate();
   }
 
@@ -71,7 +85,7 @@ class MainMenu implements Menu {
   @override
   Function() onUpdate;
 
-  MainMenu(this.onUpdate, container) {
+  MainMenu(this.onUpdate, {required SessionCubit sessionCubit}) {
     pages = SelectableList(
       onUpdate,
       [
@@ -80,7 +94,14 @@ class MainMenu implements Menu {
           SelectableList<MenuParam>(
             onUpdate,
             [
-              IntMenuParam('BPM', 120, onUpdate, container),
+              IntMenuParam(
+                'BPM',
+                120,
+                onUpdate,
+                valueStream: sessionCubit.stream.map((v) => v.bpm),
+                onIncrement: sessionCubit.incrementBpm,
+                onDecrement: sessionCubit.decrementBpm,
+              ),
             ],
           ),
           onUpdate,

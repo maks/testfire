@@ -1,9 +1,8 @@
 import 'dart:async';
-
-import 'package:riverpod/riverpod.dart';
-import 'package:testfire/session/sessionProvider.dart';
+import 'package:testfire/session/sessionCubit.dart';
 
 import 'drum_sampler.dart';
+import 'session/session.dart';
 
 enum ControlState { READY, PLAY, PAUSE, RECORD }
 
@@ -41,15 +40,15 @@ class Sequencer {
   static const int patternsPerTrack = 4;
   static const int timeSignature = 4;
 
-  late final ProviderSubscription sessionSubscription;
-  final ProviderContainer container;
+  StreamSubscription<Session>? sessionSubscription;
 
-  Sequencer(this.container) {
-    sessionSubscription = container.listen(sessionProvider, didChange: (_) {
+  Sequencer(SessionCubit sessionCubit) {
+    sessionSubscription = sessionCubit.stream.listen((session) {
       if (_state != ControlState.READY) {
         synchronize();
       }
       _signal.add(Signal());
+      _lastBpm = session.bpm;
     });
   }
 
@@ -57,8 +56,10 @@ class Sequencer {
   ControlState _state = ControlState.READY;
   get state => _state;
 
+  int _lastBpm = 0;
+
   // Beats per minute
-  int get bpm => container.read(sessionProvider).bpm;
+  int get bpm => _lastBpm;
 
   // Timer tick duration
   Duration get _tick =>
@@ -78,8 +79,8 @@ class Sequencer {
   StreamController<Signal> _signal = StreamController<Signal>.broadcast();
 
   Future<void> close() async {
-    sessionSubscription.close();
-    _signal.close(); // Not used but required by SDK
+    await sessionSubscription?.cancel();
+    await _signal.close(); // Not used but required by SDK
   }
 
   StreamSubscription<Signal> listen(Function(Signal) onData) =>
