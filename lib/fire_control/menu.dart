@@ -1,4 +1,4 @@
-import 'package:testfire/session/sessionProvider.dart';
+import 'package:testfire/session/session_cubit.dart';
 
 import '../fire_midi.dart';
 import 'page.dart';
@@ -15,23 +15,36 @@ abstract class MenuParam extends SelectableItem {
 }
 
 class IntMenuParam extends MenuParam {
-  int get value => container.read(sessionProvider).bpm;
+  final Stream<int> valueStream;
+  final Function() onIncrement;
+  final Function() onDecrement;
 
-  final container;
+  int _currentValue = 0;
 
   IntMenuParam(
-      String name, int defaultValue, Function() onUpdate, this.container)
-      : super(name, onUpdate);
+    String name,
+    Function() onUpdate, {
+    required int initialValue,
+    required this.valueStream,
+    required this.onIncrement,
+    required this.onDecrement,
+  }) : super(name, onUpdate) {
+    //TODO: need to be able to close stream subscription
+    _currentValue = initialValue;
+    valueStream.forEach((v) {
+      _currentValue = v;
+    });
+  }
 
   @override
   void next() {
-    container.read(sessionProvider.notifier).incrementBpm();
+    onIncrement();
     onUpdate();
   }
 
   @override
   void prev() {
-    container.read(sessionProvider.notifier).decrementBpm();
+    onDecrement();
     onUpdate();
   }
 
@@ -42,7 +55,7 @@ class IntMenuParam extends MenuParam {
   void draw(Screen s) {
     s.clear();
     s.drawHeading(title);
-    s.drawContent([value.toString()], large: true);
+    s.drawContent([_currentValue.toString()], large: true);
   }
 }
 
@@ -62,6 +75,7 @@ class MainMenu implements Menu {
   @override
   String get title => _title;
 
+  @override
   late final SelectableList<Page> pages;
 
   Page get selectedPage => pages.selectedItem;
@@ -71,7 +85,7 @@ class MainMenu implements Menu {
   @override
   Function() onUpdate;
 
-  MainMenu(this.onUpdate, container) {
+  MainMenu(this.onUpdate, {required SessionCubit sessionCubit}) {
     pages = SelectableList(
       onUpdate,
       [
@@ -80,7 +94,14 @@ class MainMenu implements Menu {
           SelectableList<MenuParam>(
             onUpdate,
             [
-              IntMenuParam('BPM', 120, onUpdate, container),
+              IntMenuParam(
+                'BPM',
+                onUpdate,
+                initialValue: sessionCubit.state.bpm,
+                valueStream: sessionCubit.stream.map((v) => v.bpm),
+                onIncrement: sessionCubit.incrementBpm,
+                onDecrement: sessionCubit.decrementBpm,
+              ),
             ],
           ),
           onUpdate,

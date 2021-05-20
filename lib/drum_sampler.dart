@@ -3,8 +3,8 @@ import 'package:testfire/player.dart';
 enum DRUM_SAMPLE { KICK, SNARE, HAT, TOM1, TOM2, CRASH }
 
 abstract class DrumSampler {
-  static String _ext = '.wav';
-  static String _wavPath = '/home/maks/temp/drums/';
+  static const String _ext = '.wav';
+  static const _wavPath = '/home/maks/temp/drums/';
 
   static Map<DRUM_SAMPLE, String> samples = const {
     DRUM_SAMPLE.KICK: 'kick',

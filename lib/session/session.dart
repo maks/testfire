@@ -22,7 +22,7 @@ class Session {
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    return <String, dynamic>{
       'name': name,
       'bpm': bpm,
     };
@@ -30,22 +30,24 @@ class Session {
 
   factory Session.fromMap(Map<String, dynamic> map) {
     return Session(
-      name: map['name'],
-      bpm: map['bpm'],
+      name: map['name'] as String,
+      bpm: map['bpm'] as int,
     );
   }
 
   String toJson() => json.encode(toMap());
 
   factory Session.fromJson(String source) =>
-      Session.fromMap(json.decode(source));
+      Session.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() => 'Session(name: $name, bpm: $bpm)';
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other is Session && other.name == name && other.bpm == bpm;
   }

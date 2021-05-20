@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:monochrome_draw/monochrome_draw.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:testfire/fire_control/screen.dart';
 import 'package:testfire/fire_midi.dart';
 import 'package:testfire/sequencer.dart';
+import 'package:testfire/session/session_cubit.dart';
 
 import 'fire_control/menu.dart';
 import 'fire_control/tracks.dart';
 import 'fire_control/transport.dart';
+import 'session/session.dart';
 
 void main() {
   runApp(MyApp());
@@ -37,14 +38,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final container = ProviderContainer();
+  //TODO: initialise session from storage
+  final SessionCubit sessionCubit = SessionCubit(Session.init());
 
   final MonoCanvas oledBitmap = MonoCanvas(128, 64);
   late final fire = FireDevice(_midiDataListener);
-  late final sequencer = Sequencer(container);
+  late final sequencer = Sequencer(sessionCubit);
   late final transport = Transport(sequencer, _onStop);
   late final tracks = TrackController(sequencer);
-  late final menu = MainMenu(_onMenuUpdate, container);
+  late final menu = MainMenu(_onMenuUpdate, sessionCubit: sessionCubit);
   late final Screen screen;
 
   void _midiDataListener(MidiPacket packet) {
@@ -67,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
         tracks.step(fire, sequencer.step);
       }
     });
-    Future.delayed(Duration(milliseconds: 500))
+    Future<void>.delayed(Duration(milliseconds: 500))
         .then<void>((_) => screen = Screen(_paintToOLED, menu));
   }
 

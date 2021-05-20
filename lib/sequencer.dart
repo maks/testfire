@@ -1,9 +1,8 @@
 import 'dart:async';
-
-import 'package:riverpod/riverpod.dart';
-import 'package:testfire/session/sessionProvider.dart';
+import 'package:testfire/session/session_cubit.dart';
 
 import 'drum_sampler.dart';
+import 'session/session.dart';
 
 enum ControlState { READY, PLAY, PAUSE, RECORD }
 
@@ -41,24 +40,28 @@ class Sequencer {
   static const int patternsPerTrack = 4;
   static const int timeSignature = 4;
 
-  late final ProviderSubscription sessionSubscription;
-  final ProviderContainer container;
+  StreamSubscription<Session>? sessionSubscription;
 
-  Sequencer(this.container) {
-    sessionSubscription = container.listen(sessionProvider, didChange: (_) {
+  Sequencer(SessionCubit sessionCubit) {
+    _lastBpm = sessionCubit.state.bpm;
+
+    sessionSubscription = sessionCubit.stream.listen((session) {
       if (_state != ControlState.READY) {
         synchronize();
       }
       _signal.add(Signal());
+      _lastBpm = session.bpm;
     });
   }
 
   // Engine control current state
   ControlState _state = ControlState.READY;
-  get state => _state;
+  ControlState get state => _state;
+
+  int _lastBpm = 0;
 
   // Beats per minute
-  int get bpm => container.read(sessionProvider).bpm;
+  int get bpm => _lastBpm;
 
   // Timer tick duration
   Duration get _tick =>
@@ -66,20 +69,21 @@ class Sequencer {
 
   // Generates a new blank track data structure
   static Map<DRUM_SAMPLE, List<bool>> get _blanktape =>
-      Map.fromIterable(DRUM_SAMPLE.values,
-          key: (k) => k,
-          value: (v) => List.generate(stepsPerPattern, (i) => false));
+      <DRUM_SAMPLE, List<bool>>{
+        for (var v in DRUM_SAMPLE.values)
+          v: List.generate(stepsPerPattern, (_) => false)
+      };
 
   // Track note on/off data
-  Map<DRUM_SAMPLE, List<bool>> _trackdata = _blanktape;
+  final Map<DRUM_SAMPLE, List<bool>> _trackdata = _blanktape;
   Map<DRUM_SAMPLE, List<bool>> get trackdata => _trackdata;
 
   // Outbound signal driver - allows widgets to listen for signals from audio engine
-  StreamController<Signal> _signal = StreamController<Signal>.broadcast();
+  final StreamController<Signal> _signal = StreamController<Signal>.broadcast();
 
   Future<void> close() async {
-    sessionSubscription.close();
-    _signal.close(); // Not used but required by SDK
+    await sessionSubscription?.cancel();
+    await _signal.close(); // Not used but required by SDK
   }
 
   StreamSubscription<Signal> listen(Function(Signal) onData) =>
@@ -88,7 +92,7 @@ class Sequencer {
   // temp single track step
   int step = 0;
 
-  Stopwatch _watch = Stopwatch();
+  final Stopwatch _watch = Stopwatch();
   Timer? _timer;
 
   // Incoming event handler
@@ -116,7 +120,7 @@ class Sequencer {
   }
 
   // Controller state change handler
-  control(ControlEvent event) {
+  void control(ControlEvent event) {
     switch (event.state) {
       case ControlState.PLAY:
       case ControlState.RECORD:
@@ -150,7 +154,7 @@ class Sequencer {
 
   // Quantize input using the stopwatch
   void processInput(PadEvent event) {
-    int position = (_watch.elapsedMilliseconds < 900)
+    final int position = (_watch.elapsedMilliseconds < 900)
         ? step
         : (step != (stepsPerPattern - 1))
             ? step + 1

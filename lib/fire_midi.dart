@@ -17,7 +17,7 @@ class PadColor {
 }
 
 class FireDevice implements ControllerDevice {
-  MidiCommand _midiCommand = MidiCommand();
+  final MidiCommand _midiCommand = MidiCommand();
 
   MidiDevice? _connectedDevice;
 
@@ -39,7 +39,7 @@ class FireDevice implements ControllerDevice {
     [6, 12, 18, 24, 30, 36, 42],
   ];
 
-  Uint8List _aOLEDBitmap = Uint8List(1175);
+  final Uint8List _aOLEDBitmap = Uint8List(1175);
 
   FireDevice(this.onMidiData) {
     connectDevice();
@@ -249,7 +249,7 @@ class FireDevice implements ControllerDevice {
       }
     }
 
-    Uint8List length = Uint8List.fromList([bitmap.length]);
+    final Uint8List length = Uint8List.fromList([bitmap.length]);
 
     final Uint8List sysexHeader = Uint8List.fromList([
       0xF0, // System Exclusive
@@ -279,7 +279,7 @@ class FireDevice implements ControllerDevice {
   /// debug: write out bytes sent in sysex cmd to a sysex file
   // ignore: unused_element
   void _debugSysexToFile(Uint8List midiData) {
-    File testout = File('testfire1.sysex');
+    final File testout = File('testfire1.sysex');
     testout.writeAsBytes(midiData);
   }
 }
@@ -457,8 +457,8 @@ class PadInput {
   static bool isPadDown(int cmd, int id, int value) =>
       (cmd == noteDown) && (id >= baseId) && (id <= endId);
 
-  final row;
-  final column;
+  final int row;
+  final int column;
 
   PadInput(this.row, this.column);
 
@@ -470,5 +470,6 @@ class PadInput {
     return PadInput(offset ~/ padsPerRow, offset % padsPerRow);
   }
 
+  @override
   String toString() => 'PadInput $row:$column';
 }
