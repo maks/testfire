@@ -14,4 +14,5 @@ void main(List<String> args) {
   final stream = 0;
   final mode = 0;
   final openResult = alsa.snd_pcm_open(pcm, name, stream, mode);
+  print('alsa open result: $openResult');
 }
