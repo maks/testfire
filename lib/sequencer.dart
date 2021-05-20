@@ -43,6 +43,8 @@ class Sequencer {
   StreamSubscription<Session>? sessionSubscription;
 
   Sequencer(SessionCubit sessionCubit) {
+    _lastBpm = sessionCubit.state.bpm;
+
     sessionSubscription = sessionCubit.stream.listen((session) {
       if (_state != ControlState.READY) {
         synchronize();

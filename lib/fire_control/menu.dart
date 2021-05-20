@@ -19,20 +19,20 @@ class IntMenuParam extends MenuParam {
   final Function() onIncrement;
   final Function() onDecrement;
 
-  int _lastValue = 0;
-
-  int get value => _lastValue;
+  int _currentValue = 0;
 
   IntMenuParam(
     String name,
     Function() onUpdate, {
+    required int initialValue,
     required this.valueStream,
     required this.onIncrement,
     required this.onDecrement,
   }) : super(name, onUpdate) {
     //TODO: need to be able to close stream subscription
+    _currentValue = initialValue;
     valueStream.forEach((v) {
-      _lastValue = v;
+      _currentValue = v;
     });
   }
 
@@ -55,7 +55,7 @@ class IntMenuParam extends MenuParam {
   void draw(Screen s) {
     s.clear();
     s.drawHeading(title);
-    s.drawContent([value.toString()], large: true);
+    s.drawContent([_currentValue.toString()], large: true);
   }
 }
 
@@ -97,6 +97,7 @@ class MainMenu implements Menu {
               IntMenuParam(
                 'BPM',
                 onUpdate,
+                initialValue: sessionCubit.state.bpm,
                 valueStream: sessionCubit.stream.map((v) => v.bpm),
                 onIncrement: sessionCubit.incrementBpm,
                 onDecrement: sessionCubit.decrementBpm,
